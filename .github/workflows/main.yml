@@ -1,0 +1,276 @@
+name: Build MOHSEN (Android APK + Windows 7-11 MSI)
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build_android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.5'
+          channel: 'stable'
+
+      - name: Organize Source Files if Flat
+        run: |
+          if [ ! -f "lib/main.dart" ] && [ -f "main.dart" ]; then
+            mkdir -p lib
+            mv main.dart lib/main.dart
+          fi
+
+      - name: Initialize Android Platform, App Name, Voice & File Picker
+        run: |
+          if [ ! -d "android" ]; then
+            flutter create --platforms=android --project-name mohsen --org com.mohsen.plc .
+          fi
+          python3 -c '
+          import re, pathlib, textwrap
+
+          mp = pathlib.Path("android/app/src/main/AndroidManifest.xml")
+          txt = mp.read_text(encoding="utf-8")
+          txt = re.sub(r"android:label=\"[^\"]+\"", "android:label=\"MOHSEN\"", txt)
+          if "android.permission.INTERNET" not in txt:
+              txt = txt.replace("<application", "<uses-permission android:name=\"android.permission.INTERNET\"/>\n    <application", 1)
+          if "usesCleartextTraffic" not in txt:
+              txt = txt.replace("<application", "<application android:usesCleartextTraffic=\"true\"", 1)
+          if "android.speech.action.RECOGNIZE_SPEECH" not in txt:
+              q = "<queries>\n        <intent>\n            <action android:name=\"android.speech.action.RECOGNIZE_SPEECH\"/>\n        </intent>\n    </queries>\n    <application"
+              txt = txt.replace("<application", q, 1)
+          mp.write_text(txt, encoding="utf-8")
+
+          kt_files = list(pathlib.Path("android/app/src/main/kotlin").rglob("MainActivity.kt"))
+          if kt_files:
+              kt_path = kt_files[0]
+              old_kt = kt_path.read_text(encoding="utf-8")
+              m = re.search(r"^package\s+[\w.]+", old_kt, re.M)
+              pkg = m.group(0) if m else "package com.mohsen.plc.mohsen"
+              kt_code = pkg + textwrap.dedent("""
+
+              import android.app.Activity
+              import android.content.Intent
+              import android.graphics.Bitmap
+              import android.graphics.BitmapFactory
+              import android.net.Uri
+              import android.provider.OpenableColumns
+              import android.speech.RecognizerIntent
+              import android.util.Base64
+              import io.flutter.embedding.android.FlutterActivity
+              import io.flutter.embedding.engine.FlutterEngine
+              import io.flutter.plugin.common.MethodChannel
+              import java.io.ByteArrayOutputStream
+
+              class MainActivity: FlutterActivity() {
+                  private val CHANNEL = "com.mohsen.plc/speech"
+                  private val SPEECH_REQ_CODE = 1901
+                  private val PICK_FILE_REQ_CODE = 1902
+                  private var pendingResult: MethodChannel.Result? = null
+
+                  override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
+                      super.configureFlutterEngine(flutterEngine)
+                      MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
+                          when (call.method) {
+                              "listen" -> {
+                                  if (pendingResult != null) {
+                                      result.error("BUSY", "Listening...", null)
+                                      return@setMethodCallHandler
+                                  }
+                                  pendingResult = result
+                                  val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                                      putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+                                      putExtra(RecognizerIntent.EXTRA_LANGUAGE, "fa-IR")
+                                      putExtra(RecognizerIntent.EXTRA_PROMPT, "موضوع یا مدار مورد نظر را بگویید...")
+                                  }
+                                  try {
+                                      startActivityForResult(intent, SPEECH_REQ_CODE)
+                                  } catch (e: Exception) {
+                                      pendingResult = null
+                                      result.error("NO_SPEECH", "Google Speech service not available", null)
+                                  }
+                              }
+                              "pickFile" -> {
+                                  if (pendingResult != null) {
+                                      result.error("BUSY", "Picker active", null)
+                                      return@setMethodCallHandler
+                                  }
+                                  pendingResult = result
+                                  val imagesOnly = call.argument<Boolean>("imagesOnly") ?: false
+                                  val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                                      addCategory(Intent.CATEGORY_OPENABLE)
+                                      type = if (imagesOnly) "image/*" else "*/*"
+                                  }
+                                  try {
+                                      startActivityForResult(intent, PICK_FILE_REQ_CODE)
+                                  } catch (e: Exception) {
+                                      pendingResult = null
+                                      result.error("PICK_ERR", e.message, null)
+                                  }
+                              }
+                              else -> result.notImplemented()
+                          }
+                      }
+                  }
+
+                  private fun queryFileName(uri: Uri): String {
+                      var name = "file"
+                      contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                          val idx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                          if (cursor.moveToFirst() && idx >= 0) {
+                              name = cursor.getString(idx) ?: "file"
+                          }
+                      }
+                      return name
+                  }
+
+                  override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+                      super.onActivityResult(requestCode, resultCode, data)
+                      if (requestCode == SPEECH_REQ_CODE) {
+                          val res = pendingResult
+                          pendingResult = null
+                          if (resultCode == Activity.RESULT_OK && data != null) {
+                              val matches = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+                              res?.success(matches?.firstOrNull() ?: "")
+                          } else {
+                              res?.success("")
+                          }
+                      } else if (requestCode == PICK_FILE_REQ_CODE) {
+                          val res = pendingResult
+                          pendingResult = null
+                          val uri = if (resultCode == Activity.RESULT_OK) data?.data else null
+                          if (uri == null) {
+                              res?.success(null)
+                              return
+                          }
+                          try {
+                              val name = queryFileName(uri)
+                              val mime = contentResolver.getType(uri) ?: "application/octet-stream"
+                              val rawBytes = contentResolver.openInputStream(uri)?.use { it.readBytes() } ?: ByteArray(0)
+                              if (rawBytes.size > 10 * 1024 * 1024) {
+                                  res?.error("TOO_LARGE", "حجم فایل نباید بیشتر از ۱۰ مگابایت باشد.", null)
+                                  return
+                              }
+                              val isImage = mime.startsWith("image/")
+                              var outMime = mime
+                              var outB64 = ""
+                              var textContent = ""
+                              if (isImage) {
+                                  val bmp = BitmapFactory.decodeByteArray(rawBytes, 0, rawBytes.size)
+                                  if (bmp != null) {
+                                      val maxDim = 1280
+                                      val scale = minOf(1.0f, maxDim.toFloat() / maxOf(bmp.width, bmp.height).toFloat())
+                                      val scaled = if (scale < 1.0f) {
+                                          Bitmap.createScaledBitmap(bmp, (bmp.width * scale).toInt(), (bmp.height * scale).toInt(), true)
+                                      } else bmp
+                                      val baos = ByteArrayOutputStream()
+                                      scaled.compress(Bitmap.CompressFormat.JPEG, 82, baos)
+                                      outB64 = Base64.encodeToString(baos.toByteArray(), Base64.NO_WRAP)
+                                      outMime = "image/jpeg"
+                                  } else {
+                                      outB64 = Base64.encodeToString(rawBytes, Base64.NO_WRAP)
+                                  }
+                              } else if (mime.startsWith("text/") || name.endsWith(".txt") || name.endsWith(".json") || name.endsWith(".csv") || name.endsWith(".ino") || name.endsWith(".cpp") || name.endsWith(".md")) {
+                                  textContent = String(rawBytes, Charsets.UTF_8).take(20000)
+                              } else {
+                                  outB64 = Base64.encodeToString(rawBytes, Base64.NO_WRAP)
+                              }
+                              val map = hashMapOf<String, Any>(
+                                  "name" to name,
+                                  "mime" to outMime,
+                                  "isImage" to isImage,
+                                  "base64" to outB64,
+                                  "text" to textContent
+                              )
+                              res?.success(map)
+                          } catch (e: Exception) {
+                              res?.error("READ_ERR", e.message, null)
+                          }
+                      }
+                  }
+              }
+              """)
+              kt_path.write_text(kt_code, encoding="utf-8")
+          '
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Build Release APK
+        run: flutter build apk --release --split-per-abi
+
+      - name: Upload MOHSEN APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: MOHSEN-APK
+          path: build/app/outputs/flutter-apk/app-*-release.apk
+
+  build_windows_universal:
+    name: Build Windows 7/8/10/11 Installer (MSI)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare Universal Windows Files
+        shell: pwsh
+        run: |
+          if (!(Test-Path "windows_universal")) {
+            New-Item -ItemType Directory -Force -Path "windows_universal" | Out-Null
+            if (Test-Path "mohsen_desktop.html") { Move-Item "mohsen_desktop.html" "windows_universal/mohsen_desktop.html" }
+            if (Test-Path "launch_mohsen.vbs") { Move-Item "launch_mohsen.vbs" "windows_universal/launch_mohsen.vbs" }
+          }
+
+      - name: Build MOHSEN_Win7_to_11_Setup.msi (x86 Universal WiX v5)
+        shell: pwsh
+        run: |
+          dotnet tool install --global wix --version 5.0.2
+          $wixXml = @'
+          <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+            <Package Name="MOHSEN LOGO! Soft (Win 7-11)" Manufacturer="MOHSEN PLC" Version="2.0.0.0" UpgradeCode="7F2C5B3E-9A01-4D8B-8C4F-2026B2C3D4E5" Scope="perMachine">
+              <MajorUpgrade DowngradeErrorMessage="A newer version of MOHSEN is already installed." />
+              <MediaTemplate EmbedCab="yes" />
+              <StandardDirectory Id="ProgramFilesFolder">
+                <Directory Id="INSTALLFOLDER" Name="MOHSEN LOGO Soft" />
+              </StandardDirectory>
+              <StandardDirectory Id="ProgramMenuFolder">
+                <Directory Id="ApplicationProgramsFolder" Name="MOHSEN LOGO Soft" />
+              </StandardDirectory>
+              <StandardDirectory Id="DesktopFolder" />
+              <Feature Id="MainFeature" Title="MOHSEN LOGO! Soft" Level="1">
+                <ComponentGroupRef Id="AppFiles" />
+                <ComponentRef Id="AppShortcuts" />
+              </Feature>
+              <ComponentGroup Id="AppFiles" Directory="INSTALLFOLDER">
+                <Files Include="windows_universal\**" />
+              </ComponentGroup>
+              <DirectoryRef Id="ApplicationProgramsFolder">
+                <Component Id="AppShortcuts" Guid="8A3D6E5F-6B9C-4F23-9D4E-2026E3F4A5B6">
+                  <Shortcut Id="StartMenuShortcut" Name="MOHSEN LOGO! Soft" Description="MOHSEN Siemens LOGO! PLC Simulator" Target="[SystemFolder]wscript.exe" Arguments='"[INSTALLFOLDER]launch_mohsen.vbs"' WorkingDirectory="INSTALLFOLDER" />
+                  <Shortcut Id="DesktopShortcut" Directory="DesktopFolder" Name="MOHSEN LOGO! Soft" Description="MOHSEN Siemens LOGO! PLC Simulator" Target="[SystemFolder]wscript.exe" Arguments='"[INSTALLFOLDER]launch_mohsen.vbs"' WorkingDirectory="INSTALLFOLDER" />
+                  <RemoveFolder Id="CleanAppProgramsFolder" Directory="ApplicationProgramsFolder" On="uninstall" />
+                  <RegistryValue Root="HKCU" Key="Software\MOHSEN\LOGO_Universal" Name="installed" Type="integer" Value="1" KeyPath="yes" />
+                </Component>
+              </DirectoryRef>
+            </Package>
+          </Wix>
+          '@
+          Set-Content -Path "mohsen_win7_11.wxs" -Value $wixXml -Encoding UTF8
+          wix build mohsen_win7_11.wxs -arch x86 -sice:ICE38 -sice:ICE43 -sice:ICE57 -sice:ICE64 -sice:ICE69 -o MOHSEN_Win7_to_11_Setup.msi
+
+      - name: Upload MOHSEN Windows 7-11 Installer (MSI)
+        uses: actions/upload-artifact@v4
+        with:
+          name: MOHSEN-Windows-7-to-11-MSI
+          path: MOHSEN_Win7_to_11_Setup.msi
