@@ -267,10 +267,11 @@ jobs:
           </Wix>
           '@
           Set-Content -Path "mohsen_win7_11.wxs" -Value $wixXml -Encoding UTF8
-          wix build mohsen_win7_11.wxs -arch x86 -sice:ICE38 -sice:ICE43 -sice:ICE57 -sice:ICE64 -sice:ICE69 -o MOHSEN_Win7_to_11_Setup.msi
+          wix build mohsen_win7_11.wxs -arch x86 -o MOHSEN_Win7_to_11_Setup.msi
 
       - name: Upload MOHSEN Windows 7-11 Installer (MSI)
         uses: actions/upload-artifact@v4
         with:
           name: MOHSEN-Windows-7-to-11-MSI
           path: MOHSEN_Win7_to_11_Setup.msi
+          
