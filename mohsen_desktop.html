@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MOHSEN - LOGO! Soft Comfort (Windows 7-11)</title>
+<style>
+  :root {
+    --bg: #eef1f6; --bar: #1f2a44; --panel: #ffffff; --border: #c5ccd8;
+    --gold: #e5c158; --gold-dark: #a68222; --accent: #1d4ed8;
+    --wire-off: #2563eb; --wire-on: #dc2626;
+  }
+  * { box-sizing: border-box; user-select: none; }
+  body { margin: 0; font-family: Tahoma, "Segoe UI", sans-serif; background: var(--bg); color: #1e293b; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+  /* Top Toolbar */
+  .toolbar { background: var(--bar); color: #fff; padding: 5px 8px; display: flex; flex-wrap: nowrap; align-items: center; gap: 5px; overflow-x: auto; border-bottom: 2px solid #0f172a; }
+  .brand { font-weight: bold; font-size: 13px; color: #fbbf24; padding: 0 8px; white-space: nowrap; border-left: 1px solid #334155; }
+  .tbtn { background: #334155; color: #fff; border: 1px solid #475569; border-radius: 4px; padding: 4px 8px; font-size: 11.5px; cursor: pointer; white-space: nowrap; font-family: inherit; }
+  .tbtn:hover { background: #475569; }
+  .tbtn.active { background: #16a34a; border-color: #15803d; }
+  .tbtn.red { background: #b91c1c; border-color: #991b1b; }
+  .tbtn.purple { background: #5b21b6; border-color: #4c1d95; }
+  .tbtn.teal { background: #0f766e; border-color: #115e59; }
+  .tbtn.amber { background: #b45309; border-color: #92400e; }
+  .vtabs { display: flex; background: #0f172a; border-radius: 4px; padding: 2px; gap: 2px; }
+  .vtab { background: transparent; color: #cbd5e1; border: none; padding: 3px 8px; font-size: 11px; cursor: pointer; border-radius: 3px; font-family: inherit; }
+  .vtab.on { background: #2563eb; color: #fff; font-weight: bold; }
+
+  /* Workspace */
+  .main { flex: 1; display: flex; overflow: hidden; direction: ltr; }
+  .sidebar { width: 215px; background: var(--panel); border-right: 1px solid var(--border); overflow-y: auto; padding: 6px; direction: rtl; flex-shrink: 0; }
+  .cat-title { font-size: 11px; font-weight: bold; background: #e2e8f0; color: #1e293b; padding: 4px 6px; border-radius: 3px; margin: 6px 0 4px; }
+  .blk-item { display: flex; justify-content: space-between; align-items: center; padding: 4px 6px; margin-bottom: 3px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 11px; cursor: pointer; }
+  .blk-item:hover { background: #fef3c7; border-color: var(--gold-dark); }
+  .blk-code { background: var(--gold); color: #111; font-weight: bold; font-size: 10px; padding: 1px 5px; border-radius: 3px; font-family: Consolas, monospace; }
+
+  .canvas-wrap { flex: 1; position: relative; overflow: auto; background: #fdfdfd; }
+  #gridCanvas { display: block; background-color: #fff; background-image: linear-gradient(to right, #e5e7eb 1px, transparent 1px), linear-gradient(to bottom, #e5e7eb 1px, transparent 1px), linear-gradient(to right, #cbd5e1 1px, transparent 1px), linear-gradient(to bottom, #cbd5e1 1px, transparent 1px); background-size: 20px 20px, 20px 20px, 100px 100px, 100px 100px; }
+  .sim-bar { background: #1e293b; color: #e2e8f0; padding: 4px 10px; font-size: 11.5px; display: flex; align-items: center; gap: 10px; direction: rtl; border-top: 1px solid #0f172a; }
+  .io-pill { padding: 2px 8px; border-radius: 12px; font-size: 11px; cursor: pointer; border: 1px solid #64748b; background: #334155; color: #fff; }
+  .io-pill.on { background: #dc2626; border-color: #f87171; }
+  .out-pill { padding: 2px 8px; border-radius: 12px; font-size: 11px; background: #0f172a; border: 1px solid #475569; color: #94a3b8; }
+  .out-pill.on { background: #16a34a; color: #fff; border-color: #4ade80; }
+
+  /* Secondary Views */
+  .view-pane { display: none; position: absolute; inset: 0; background: #f8fafc; overflow: auto; padding: 14px; direction: rtl; }
+  .view-pane.show { display: block; }
+
+  /* Full-Screen AI Page */
+  #aiPage { display: none; position: fixed; inset: 0; background: #f4f6fa; z-index: 900; flex-direction: column; direction: rtl; }
+  #aiPage.show { display: flex; }
+  .ai-head { background: #1f2a44; color: #fff; padding: 8px 14px; display: flex; align-items: center; gap: 10px; }
+  .ai-settings { background: #fff; padding: 8px 14px; border-bottom: 1px solid #cbd5e1; display: none; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .ai-settings.show { display: flex; }
+  .ai-settings input { padding: 5px 8px; border: 1px solid #94a3b8; border-radius: 4px; font-size: 12px; font-family: inherit; }
+  .ai-chat-body { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+  .msg { max-width: 78%; padding: 10px 14px; border-radius: 10px; font-size: 13px; line-height: 1.65; white-space: pre-wrap; user-select: text; }
+  .msg.user { align-self: flex-start; background: #e0e7ff; border: 1px solid #a5b4fc; }
+  .msg.bot { align-self: flex-end; background: #fff; border: 1px solid #cbd5e1; }
+  .ai-foot { background: #fff; padding: 8px 12px; border-top: 1px solid #cbd5e1; display: flex; gap: 6px; align-items: center; }
+  .ai-foot textarea { flex: 1; padding: 7px 10px; border: 1px solid #94a3b8; border-radius: 6px; font-family: inherit; font-size: 13px; resize: none; height: 42px; }
+
+  /* Modals */
+  .modal-bg { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.55); z-index: 800; align-items: center; justify-content: center; direction: rtl; }
+  .modal-bg.show { display: flex; }
+  .modal { background: #fff; width: 680px; max-width: 94vw; max-height: 86vh; border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 12px 32px rgba(0,0,0,0.25); }
+  .modal-h { background: #1f2a44; color: #fff; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 13.5px; }
+  .modal-b { padding: 12px 14px; overflow-y: auto; flex: 1; font-size: 12.5px; }
+  .book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 8px; }
+  .book-card { padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; background: #f8fafc; cursor: pointer; text-align: right; font-family: inherit; }
+  .book-card:hover { background: #e0f2fe; border-color: #0284c7; }
+  pre.codebox { background: #0f172a; color: #e2e8f0; padding: 12px; border-radius: 6px; direction: ltr; text-align: left; font-family: Consolas, monospace; font-size: 12px; overflow: auto; max-height: 58vh; user-select: text; }
+  .hw-box { width: 420px; margin: 16px auto; background: #cbd5e1; border: 3px solid #475569; border-radius: 10px; padding: 14px; direction: ltr; }
+  .hw-lcd { background: #84cc16; color: #1a2e05; font-family: Consolas, monospace; padding: 12px; border: 3px inset #4d7c0f; border-radius: 4px; min-height: 86px; font-size: 13px; margin: 10px 0; }
+  .hw-row { display: flex; justify-content: space-between; gap: 4px; }
+  .hw-term { flex: 1; text-align: center; padding: 6px 2px; border-radius: 4px; background: #334155; color: #fff; font-size: 11px; cursor: pointer; }
+  .hw-term.on { background: #dc2626; }
+  .hw-term.qon { background: #16a34a; }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <span class="brand">⚡ MOHSEN LOGO! Soft</span>
+  <button class="tbtn teal" onclick="openBookModal()">📚 کل مدارهای کتاب (۳۳)</button>
+  <button class="tbtn" id="btnWire" onclick="toggleWireMode()">🔌 سیم‌کشی دستی</button>
+  <button class="tbtn" onclick="clearCanvas()">🗑 پاک کردن</button>
+  <button class="tbtn purple" onclick="openAiPage(1)">🧠 هوش مصنوعی API</button>
+  <button class="tbtn red" onclick="startVoiceDraw()">🎙 صحبت و رسم</button>
+  <button class="tbtn teal" onclick="openCodeModal()">💻 کد آردوینو/میکرو</button>
+  <button class="tbtn amber" onclick="openProjectsModal()">💾 پروژه‌ها</button>
+  <div class="vtabs">
+    <button class="vtab on" onclick="setView(0,this)">FBD</button>
+    <button class="vtab" onclick="setView(1,this)">LAD</button>
+    <button class="vtab" onclick="setView(2,this)">SCOPE</button>
+    <button class="vtab" onclick="setView(3,this)">کارگاه</button>
+    <button class="vtab" onclick="setView(4,this)">سخت‌افزار</button>
+  </div>
+  <button class="tbtn" id="btnSim" onclick="toggleSim()">▶ SIM (F3)</button>
+  <button class="tbtn red" id="btnPower" onclick="togglePowerFail()" style="display:none">⚡ قطع برق</button>
+</div>
+
+<div class="main">
+  <div class="sidebar" id="sidebar"></div>
+  <div class="canvas-wrap">
+    <canvas id="gridCanvas" width="1400" height="900"></canvas>
+    <div id="viewLad" class="view-pane"></div>
+    <div id="viewScope" class="view-pane"><canvas id="scopeCanvas" width="1100" height="420" style="background:#0f172a;border-radius:6px;"></canvas></div>
+    <div id="viewPlant" class="view-pane"></div>
+    <div id="viewHw" class="view-pane"></div>
+  </div>
+</div>
+
+<div class="sim-bar" id="simBar">
+  <span id="statusTxt">آماده طراحی | روی هر بلوک دبل‌کلیک کنید تا تنظیماتش باز شود؛ برای حذف راست‌کلیک کنید.</span>
+  <div id="ioControls" style="display:flex;gap:5px;flex-wrap:wrap;margin-right:auto;"></div>
+</div>
+
+<!-- Full-Screen AI Page -->
+<div id="aiPage">
+  <div class="ai-head">
+    <button class="tbtn" onclick="closeAiPage()">← بازگشت به مدار</button>
+    <strong style="font-size:14px;color:#fbbf24;">هوش مصنوعی MOHSEN</strong>
+    <button class="tbtn" id="tabChat" onclick="setAiTab(1)">💬 چت و پرسش</button>
+    <button class="tbtn" id="tabDraw" onclick="setAiTab(0)">⚡ رسم مدار روی بوم</button>
+    <button class="tbtn" style="margin-right:auto;" onclick="toggleAiSettings()">⚙ تنظیمات API</button>
+    <button class="tbtn red" onclick="clearAiChat()">پاک کردن چت</button>
+  </div>
+  <div class="ai-settings" id="aiSettings">
+    <button class="tbtn teal" onclick="presetApi('liara')">لیارا (Liara)</button>
+    <button class="tbtn" onclick="presetApi('openai')">OpenAI</button>
+    <button class="tbtn" onclick="presetApi('openrouter')">OpenRouter</button>
+    <button class="tbtn" onclick="presetApi('avalai')">AvalAI</button>
+    <input id="aiUrl" style="flex:2;min-width:240px;" placeholder="https://ai.liara.ir/api/PROJECT_ID/v1/chat/completions">
+    <input id="aiKey" type="password" style="flex:1;min-width:150px;" placeholder="API Key">
+    <input id="aiModel" style="width:170px;" placeholder="openai/gpt-4.1-mini">
+    <button class="tbtn active" onclick="saveAiCfg()">ذخیره</button>
+  </div>
+  <div id="aiErr" style="display:none;background:#fff7ed;color:#c2410c;padding:6px 14px;font-size:12px;border-bottom:1px solid #fed7aa;"></div>
+  <div class="ai-chat-body" id="aiChatBody"></div>
+  <div id="attBar" style="display:none;background:#eef2ff;padding:5px 14px;font-size:12px;align-items:center;gap:8px;border-top:1px solid #c7d2fe;">
+    <span id="attName"></span>
+    <button class="tbtn red" onclick="clearAttachment()">حذف پیوست</button>
+  </div>
+  <div class="ai-foot">
+    <input type="file" id="imgPicker" accept="image/*" style="display:none" onchange="handleFilePick(this,true)">
+    <input type="file" id="filePicker" style="display:none" onchange="handleFilePick(this,false)">
+    <button class="tbtn" title="آپلود عکس" onclick="document.getElementById('imgPicker').click()">🖼 عکس</button>
+    <button class="tbtn teal" title="آپلود فایل" onclick="document.getElementById('filePicker').click()">📎 فایل</button>
+    <button class="tbtn red" title="صحبت فارسی" onclick="voiceToInput()">🎙 صدا</button>
+    <textarea id="aiInput" placeholder="سوالت را بنویس یا مدار مورد نظر را توضیح بده (یا عکس نقشه آپلود کن)..."></textarea>
+    <button class="tbtn active" id="aiSendBtn" onclick="sendAiAction()">ارسال</button>
+  </div>
+</div>
+
+<!-- Generic Modal (Book Circuits / Arduino Code / Projects) -->
+<div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-h"><span id="modalTitle"></span><button class="tbtn red" onclick="closeModal()">✕ بستن</button></div>
+    <div class="modal-b" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+const BLOCK_DEFS = [
+  {cat:'ورودی و خروجی (Co)', items:[
+    {type:'input', code:'I', name:'ورودی دیجیتال (کلید/شستی)', pins:0},
+    {type:'analogInput', code:'AI', name:'ورودی آنالوگ (0-10V)', pins:0},
+    {type:'output', code:'Q', name:'خروجی رله (لامپ/موتور)', pins:1},
+    {type:'analogOutput', code:'AQ', name:'خروجی آنالوگ (PWM)', pins:1},
+    {type:'flag', code:'M', name:'پرچم حافظه (Flag)', pins:1},
+    {type:'high', code:'HI', name:'سطح منطقی ۱ دائم', pins:0},
+    {type:'low', code:'LO', name:'سطح منطقی ۰ دائم', pins:0},
+    {type:'networkInput', code:'NI', name:'ورودی شبکه / موبایل', pins:0},
+    {type:'networkOutput', code:'NQ', name:'خروجی شبکه / KNX', pins:1}
+  ]},
+  {cat:'توابع پایه منطقی (GF)', items:[
+    {type:'andGate', code:'&', name:'گیت AND (سری)', pins:3},
+    {type:'orGate', code:'≥1', name:'گیت OR (موازی)', pins:3},
+    {type:'notGate', code:'1', name:'گیت NOT (معکوس)', pins:1},
+    {type:'nandGate', code:'&/', name:'گیت NAND', pins:3},
+    {type:'norGate', code:'≥1/', name:'گیت NOR', pins:3},
+    {type:'xorGate', code:'=1', name:'گیت XOR (تبدیل)', pins:2},
+    {type:'andEdge', code:'&↑', name:'AND لبه بالا رونده', pins:2}
+  ]},
+  {cat:'توابع ویژه و تایمرها (SF)', items:[
+    {type:'ton', code:'TON', name:'تایمر تأخیر در وصل', pins:1},
+    {type:'tof', code:'TOF', name:'تایمر تأخیر در قطع', pins:1},
+    {type:'tonr', code:'TONR', name:'تأخیر وصل ماندگار', pins:2},
+    {type:'tp', code:'TP', name:'تایمر پالس (Wiping)', pins:1},
+    {type:'pulse', code:'PLS', name:'مولد پالس (فلاشر)', pins:1},
+    {type:'stairway', code:'STW', name:'تایمر راه‌پله', pins:1},
+    {type:'weeklyTimer', code:'WEEK', name:'تایمر هفتگی', pins:0},
+    {type:'yearlyTimer', code:'YEAR', name:'تایمر سالانه', pins:0},
+    {type:'rs', code:'RS', name:'رله خودنگهدار (RS)', pins:2},
+    {type:'impulse', code:'IMP', name:'رله ضربه‌ای / پله‌ای', pins:2},
+    {type:'ctud', code:'CTUD', name:'شمارنده بالا/پایین', pins:3},
+    {type:'operatingHours', code:'OT', name:'شمارنده ساعت کارکرد', pins:2},
+    {type:'analogCmp', code:'A≥', name:'مقایسه‌گر آنالوگ', pins:1},
+    {type:'analogAmp', code:'AMP', name:'تقویت‌کننده آنالوگ', pins:1},
+    {type:'analogMath', code:'MATH', name:'عملیات ریاضی آنالوگ', pins:1},
+    {type:'piController', code:'PI', name:'کنترلر PI', pins:1},
+    {type:'shiftRegister', code:'SHR', name:'شیفت رجیستر', pins:2},
+    {type:'messageText', code:'MSG', name:'متن پیغام LCD', pins:1}
+  ]}
+];
+
+const PIN_MAP = {};
+BLOCK_DEFS.forEach(c => c.items.forEach(i => PIN_MAP[i.type] = i));
+
+let blocks = [], wires = [], idSeq = 1;
+let isSim = false, powerOff = false, simTimer = null, wireMode = false, wireFrom = null;
+let dragBlk = null, dragOff = {x:0, y:0}, viewMode = 0;
+let scopeHistory = [];
+let aiTab = 1, aiChat = [], pendingAtt = null;
+
+const canvas = document.getElementById('gridCanvas');
+const ctx = canvas.getContext('2d');
+
+function initSidebar() {
+  const sb = document.getElementById('sidebar');
+  sb.innerHTML = BLOCK_DEFS.map(cat =>
+    `<div class="cat-title">${cat.cat}</div>` +
+    cat.items.map(it =>
+      `<div class="blk-item" onclick="addBlock('${it.type}')"><span>${it.name}</span><span class="blk-code">${it.code}</span></div>`
+    ).join('')
+  ).join('');
+}
+
+function addBlock(type, x, y, label, code, param) {
+  const def = PIN_MAP[type] || {code:'B', name:type, pins:2};
+  const id = 'b' + (idSeq++);
+  const cnt = blocks.filter(b => b.type === type).length + 1;
+  const bCode = code || (type==='input'?'I'+cnt : type==='output'?'Q'+cnt : type==='analogInput'?'AI'+cnt : 'B'+String(idSeq).padStart(3,'0'));
+  const blk = {
+    id, type, code: bCode, label: label || bCode,
+    x: x !== undefined ? x : 100 + (blocks.length % 5) * 140,
+    y: y !== undefined ? y : 60 + Math.floor(blocks.length / 5) * 100,
+    param: param !== undefined ? param : 3, param2: 2,
+    val: false, aVal: 25, timer: 0, count: 0, prevIn: false
+  };
+  blocks.push(blk);
+  draw();
+  updateIoBar();
+  return blk;
+}
+
+function clearCanvas() {
+  if (isSim) toggleSim();
+  blocks = []; wires = []; idSeq = 1; wireFrom = null; scopeHistory = [];
+  draw(); updateIoBar();
+}
+
+function toggleWireMode() {
+  wireMode = !wireMode; wireFrom = null;
+  document.getElementById('btnWire').classList.toggle('active', wireMode);
+  document.getElementById('statusTxt').textContent = wireMode
+    ? 'حالت سیم‌کشی فعال است: اول روی بلوک مبدأ و سپس روی بلوک مقصد کلیک کنید.'
+    : 'آماده طراحی | دبل‌کلیک برای تنظیمات بلوک، راست‌کلیک برای حذف.';
+}
+
+function getBlockAt(mx, my) {
+  for (let i = blocks.length - 1; i >= 0; i--) {
+    const b = blocks[i];
+    if (mx >= b.x && mx <= b.x + 86 && my >= b.y && my <= b.y + 58) return b;
+  }
+  return null;
+}
+
+canvas.addEventListener('mousedown', e => {
+  const r = canvas.getBoundingClientRect();
+  const mx = e.clientX - r.left, my = e.clientY - r.top;
+  const b = getBlockAt(mx, my);
+  if (e.button === 2) {
+    if (b) {
+      blocks = blocks.filter(x => x.id !== b.id);
+      wires = wires.filter(w => w.from !== b.id && w.to !== b.id);
+      draw(); updateIoBar();
+    }
+    return;
+  }
+  if (isSim && b && (b.type === 'input' || b.type === 'networkInput')) {
+    b.val = !b.val; draw(); updateIoBar(); return;
+  }
+  if (wireMode) {
+    if (!b) { wireFrom = null; draw(); return; }
+    if (!wireFrom) { wireFrom = b.id; draw(); return; }
+    if (wireFrom !== b.id) {
+      const usedPins = wires.filter(w => w.to === b.id).length;
+      wires.push({id: 'w'+(idSeq++), from: wireFrom, to: b.id, pin: usedPins});
+      wireFrom = null; draw();
+    }
+    return;
+  }
+  if (b) { dragBlk = b; dragOff = {x: mx - b.x, y: my - b.y}; }
+});
+
+canvas.addEventListener('mousemove', e => {
+  if (!dragBlk) return;
+  const r = canvas.getBoundingClientRect();
+  dragBlk.x = Math.max(10, Math.round((e.clientX - r.left - dragOff.x) / 10) * 10);
+  dragBlk.y = Math.max(10, Math.round((e.clientY - r.top - dragOff.y) / 10) * 10);
+  draw();
+});
+window.addEventListener('mouseup', () => { dragBlk = null; });
+canvas.addEventListener('contextmenu', e => e.preventDefault());
+
+canvas.addEventListener('dblclick', e => {
+  const r = canvas.getBoundingClientRect();
+  const b = getBlockAt(e.clientX - r.left, e.clientY - r.top);
+  if (!b) return;
+  const newLbl = prompt('نام برچسب بلوک (' + b.code + '):', b.label);
+  if (newLbl !== null && newLbl.trim()) b.label = newLbl.trim();
+  if (['ton','tof','tonr','tp','pulse','stairway','ctud','analogCmp','analogInput'].includes(b.type)) {
+    const p = prompt('مقدار پارامتر (ثانیه / تعداد / آستانه دما):', b.type==='analogInput' ? b.aVal : b.param);
+    if (p !== null && !isNaN(parseFloat(p))) {
+      if (b.type === 'analogInput') b.aVal = parseFloat(p);
+      else b.param = parseFloat(p);
+    }
+  }
+  draw(); updateIoBar();
+});
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const bMap = {}; blocks.forEach(b => bMap[b.id] = b);
+
+  // Orthogonal wires
+  wires.forEach(w => {
+    const f = bMap[w.from], t = bMap[w.to];
+    if (!f || !t) return;
+    const x1 = f.x + 86, y1 = f.y + 29;
+    const x2 = t.x, y2 = t.y + 14 + (w.pin % 3) * 14;
+    const midX = x1 + (x2 - x1) / 2;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1); ctx.lineTo(midX, y1); ctx.lineTo(midX, y2); ctx.lineTo(x2, y2);
+    ctx.strokeStyle = (isSim && f.val && !powerOff) ? '#dc2626' : '#2563eb';
+    ctx.lineWidth = (isSim && f.val && !powerOff) ? 2.6 : 1.7;
+    ctx.stroke();
+    ctx.fillStyle = ctx.strokeStyle;
+    ctx.beginPath(); ctx.arc(x1, y1, 3, 0, Math.PI*2); ctx.fill();
+  });
+
+  // Blocks (LOGO! Soft golden-ochre style)
+  blocks.forEach(b => {
+    const def = PIN_MAP[b.type] || {code:b.code, pins:2};
+    const active = isSim && b.val && !powerOff;
+    ctx.fillStyle = b.type==='input' ? (active?'#fca5a5':'#dbeafe') :
+                    b.type==='output' ? (active?'#86efac':'#e2e8f0') : '#e5c158';
+    ctx.strokeStyle = wireFrom === b.id ? '#dc2626' : '#334155';
+    ctx.lineWidth = wireFrom === b.id ? 2.5 : 1.5;
+    ctx.fillRect(b.x, b.y, 86, 58);
+    ctx.strokeRect(b.x, b.y, 86, 58);
+
+    // Header code
+    ctx.fillStyle = '#1e293b';
+    ctx.font = 'bold 11px Consolas, monospace';
+    ctx.fillText(b.code, b.x + 6, b.y + 14);
+    ctx.font = 'bold 14px Consolas, monospace';
+    ctx.fillText(def.code, b.x + 30, b.y + 34);
+    ctx.font = '10px Tahoma, sans-serif';
+    ctx.fillStyle = '#0f172a';
+    ctx.fillText(b.label.slice(0, 14), b.x + 5, b.y + 52);
+
+    // Hanging parameter box for timers/counters/analog
+    if (['ton','tof','tonr','tp','pulse','stairway','ctud','analogCmp','analogInput'].includes(b.type)) {
+      ctx.fillStyle = '#fef9c3'; ctx.strokeStyle = '#a16207'; ctx.lineWidth = 1;
+      ctx.fillRect(b.x + 6, b.y + 60, 74, 18); ctx.strokeRect(b.x + 6, b.y + 60, 74, 18);
+      ctx.fillStyle = '#713f12'; ctx.font = '10px Consolas, monospace';
+      const pTxt = b.type==='analogInput' ? ('AI=' + b.aVal) :
+                   b.type==='ctud' ? ('C:' + b.count + '/' + b.param) :
+                   b.type==='analogCmp' ? ('≥' + b.param) : ('T:' + b.timer.toFixed(1) + '/' + b.param + 's');
+      ctx.fillText(pTxt, b.x + 10, b.y + 73);
+    }
+  });
+
+  if (viewMode === 1) renderLad();
+  if (viewMode === 2) renderScope();
+  if (viewMode === 3) renderPlant();
+  if (viewMode === 4) renderHw();
+}
+
+function updateIoBar() {
+  const io = document.getElementById('ioControls');
+  const ins = blocks.filter(b => b.type==='input' || b.type==='networkInput' || b.type==='analogInput');
+  const outs = blocks.filter(b => b.type==='output' || b.type==='analogOutput' || b.type==='networkOutput');
+  io.innerHTML =
+    ins.map(b => b.type==='analogInput'
+      ? `<span class="io-pill">${b.code}: <input type="range" min="0" max="100" value="${b.aVal}" style="width:60px;vertical-align:middle" oninput="setAnalog('${b.id}',this.value)"> ${b.aVal}</span>`
+      : `<button class="io-pill ${b.val?'on':''}" onclick="toggleIn('${b.id}')">${b.code} (${b.label})</button>`
+    ).join('') +
+    outs.map(b => `<span class="out-pill ${b.val&&isSim&&!powerOff?'on':''}">${b.code}: ${b.val&&isSim&&!powerOff?'ON':'OFF'}</span>`).join('');
+}
+
+function toggleIn(id) {
+  const b = blocks.find(x => x.id === id);
+  if (b) { b.val = !b.val; draw(); updateIoBar(); }
+}
+function setAnalog(id, v) {
+  const b = blocks.find(x => x.id === id);
+  if (b) { b.aVal = parseFloat(v); draw(); updateIoBar(); }
+}
+
+function stepSim() {
+  if (powerOff) { draw(); updateIoBar(); return; }
+  const bMap = {}; blocks.forEach(b => bMap[b.id] = b);
+  const dt = 0.1;
+
+  for (let pass = 0; pass < 3; pass++) {
+    blocks.forEach(b => {
+      const ins = wires.filter(w => w.to === b.id).sort((a,c)=>a.pin-c.pin).map(w => bMap[w.from]);
+      const v = i => ins[i] ? !!ins[i].val : false;
+      const a = i => ins[i] ? (ins[i].aVal || 0) : 0;
+      switch (b.type) {
+        case 'high': b.val = true; break;
+        case 'low': b.val = false; break;
+        case 'output': case 'flag': case 'networkOutput': case 'messageText': b.val = v(0); break;
+        case 'analogOutput': b.aVal = a(0); b.val = b.aVal > 0 || v(0); break;
+        case 'andGate': b.val = ins.length > 0 && ins.every(x => x && x.val); break;
+        case 'orGate': b.val = ins.some(x => x && x.val); break;
+        case 'notGate': b.val = !v(0); break;
+        case 'nandGate': b.val = !(ins.length > 0 && ins.every(x => x && x.val)); break;
+        case 'norGate': b.val = !ins.some(x => x && x.val); break;
+        case 'xorGate': b.val = ins.filter(x => x && x.val).length % 2 === 1; break;
+        case 'andEdge': b.val = (ins.length>0 && ins.every(x=>x&&x.val)) && !b.prevIn; break;
+        case 'rs': if (v(1)) b.val = false; else if (v(0)) b.val = true; break;
+        case 'impulse': if (v(1)) b.val = false; else if (v(0) && !b.prevIn) b.val = !b.val; break;
+        case 'ton':
+          if (v(0)) { b.timer = Math.min(b.param, b.timer + dt); b.val = b.timer >= b.param; }
+          else { b.timer = 0; b.val = false; }
+          break;
+        case 'tof': case 'stairway':
+          if (v(0)) { b.timer = b.param; b.val = true; }
+          else if (b.timer > 0) { b.timer = Math.max(0, b.timer - dt); b.val = b.timer > 0; }
+          else b.val = false;
+          break;
+        case 'tonr':
+          if (v(1)) { b.timer = 0; b.val = false; }
+          else if (v(0)) { b.timer = Math.min(b.param, b.timer + dt); b.val = b.timer >= b.param; }
+          break;
+        case 'tp':
+          if (v(0) && !b.prevIn) { b.timer = b.param; b.val = true; }
+          else if (b.timer > 0) { b.timer = Math.max(0, b.timer - dt); b.val = b.timer > 0; }
+          else b.val = false;
+          break;
+        case 'pulse':
+          if (v(0)) { b.timer += dt; if (b.timer >= b.param) { b.timer = 0; b.val = !b.val; } }
+          else { b.timer = 0; b.val = false; }
+          break;
+        case 'weeklyTimer': case 'yearlyTimer': b.val = true; break;
+        case 'ctud':
+          if (v(0)) b.count = 0;
+          if (v(1) && !b.prevIn) b.count += v(2) ? -1 : 1;
+          b.val = b.count >= b.param;
+          break;
+        case 'operatingHours':
+          if (v(0)) b.timer += dt;
+          if (v(1)) b.timer = 0;
+          b.val = b.timer >= b.param;
+          break;
+        case 'analogCmp': b.val = a(0) >= b.param; break;
+        case 'analogAmp': case 'analogMath': case 'piController': b.aVal = a(0) * 1.2; b.val = b.aVal >= b.param; break;
+        case 'shiftRegister':
+          if (v(0) && !b.prevIn) b.val = !b.val;
+          if (v(1)) b.val = false;
+          break;
+      }
+      b.prevIn = (b.type === 'ctud') ? v(1) : (b.type === 'andEdge' ? (ins.length>0 && ins.every(x=>x&&x.val)) : v(0));
+    });
+  }
+
+  const snap = {};
+  blocks.filter(b => b.type==='input'||b.type==='output').forEach(b => snap[b.code] = b.val);
+  scopeHistory.push(snap);
+  if (scopeHistory.length > 80) scopeHistory.shift();
+  draw(); updateIoBar();
+}
+
+function toggleSim() {
+  isSim = !isSim; powerOff = false;
+  document.getElementById('btnSim').classList.toggle('active', isSim);
+  document.getElementById('btnSim').textContent = isSim ? '⏹ توقف SIM' : '▶ SIM (F3)';
+  document.getElementById('btnPower').style.display = isSim ? 'inline-block' : 'none';
+  if (isSim) { simTimer = setInterval(stepSim, 100); }
+  else { clearInterval(simTimer); simTimer = null; }
+  draw(); updateIoBar();
+}
+function togglePowerFail() {
+  powerOff = !powerOff;
+  document.getElementById('btnPower').textContent = powerOff ? '🔌 وصل برق' : '⚡ قطع برق';
+  draw(); updateIoBar();
+}
+window.addEventListener('keydown', e => { if (e.key === 'F3') { e.preventDefault(); toggleSim(); } });
+
+function setView(m, el) {
+  viewMode = m;
+  document.querySelectorAll('.vtab').forEach(x => x.classList.remove('on'));
+  if (el) el.classList.add('on');
+  document.getElementById('viewLad').classList.toggle('show', m===1);
+  document.getElementById('viewScope').classList.toggle('show', m===2);
+  document.getElementById('viewPlant').classList.toggle('show', m===3);
+  document.getElementById('viewHw').classList.toggle('show', m===4);
+  draw();
+}
+
+function renderLad() {
+  const outs = blocks.filter(b => b.type==='output');
+  const bMap = {}; blocks.forEach(b => bMap[b.id] = b);
+  let html = '<h3>نمای نردبانی IEC (LAD)</h3>';
+  if (!outs.length) { html += '<p>خروجی (Q) در مدار وجود ندارد.</p>'; }
+  outs.forEach((q, idx) => {
+    const src = wires.filter(w => w.to === q.id).map(w => bMap[w.from]?.code || '?').join(' ── ');
+    const on = isSim && q.val && !powerOff;
+    html += `<div style="background:#fff;border:1px solid #cbd5e1;padding:10px;margin:8px 0;font-family:Consolas,monospace;direction:ltr;border-left:4px solid ${on?'#dc2626':'#2563eb'}">
+      Rung ${idx+1}:  |──[ ${src || 'OPEN'} ]────────────────( ${q.code}: ${q.label} )──|  [${on?'ON':'OFF'}]
+    </div>`;
+  });
+  document.getElementById('viewLad').innerHTML = html;
+}
+
+function renderScope() {
+  const sc = document.getElementById('scopeCanvas');
+  const sctx = sc.getContext('2d');
+  sctx.clearRect(0, 0, sc.width, sc.height);
+  const keys = Object.keys(scopeHistory[scopeHistory.length-1] || {});
+  keys.forEach((k, idx) => {
+    const yBase = 40 + idx * 45;
+    sctx.fillStyle = '#fbbf24'; sctx.font = 'bold 12px Consolas'; sctx.fillText(k, 10, yBase);
+    sctx.beginPath(); sctx.strokeStyle = k.startsWith('Q') ? '#4ade80' : '#38bdf8'; sctx.lineWidth = 2;
+    scopeHistory.forEach((h, i) => {
+      const x = 60 + i * 12, y = h[k] ? yBase - 18 : yBase;
+      if (i === 0) sctx.moveTo(x, y); else sctx.lineTo(x, y);
+    });
+    sctx.stroke();
+  });
+}
+
+function renderPlant() {
+  const outs = blocks.filter(b => b.type==='output');
+  document.getElementById('viewPlant').innerHTML =
+    '<h3>شبیه‌سازی کارگاهی (تجهیزات خروجی)</h3><div style="display:flex;gap:14px;flex-wrap:wrap;">' +
+    (outs.length ? outs.map(q => {
+      const on = isSim && q.val && !powerOff;
+      return `<div style="width:170px;background:#fff;border:2px solid ${on?'#16a34a':'#cbd5e1'};border-radius:10px;padding:14px;text-align:center;">
+        <div style="font-size:38px;">${q.label.includes('موتور')||q.label.includes('پمپ') ? (on?'⚙️':'🛑') : (on?'💡':'⚫')}</div>
+        <strong>${q.code} - ${q.label}</strong>
+        <div style="margin-top:6px;color:${on?'#15803d':'#64748b'};font-weight:bold;">${on?'روشن / فعال':'خاموش'}</div>
+      </div>`;
+    }).join('') : '<p>خروجی برای نمایش وجود ندارد.</p>') + '</div>';
+}
+
+function renderHw() {
+  const ins = blocks.filter(b => b.type==='input');
+  const outs = blocks.filter(b => b.type==='output');
+  document.getElementById('viewHw').innerHTML = `
+    <div class="hw-box">
+      <div style="font-weight:bold;font-size:13px;margin-bottom:6px;">SIEMENS LOGO! 12/24RCE (MOHSEN)</div>
+      <div class="hw-row">
+        ${[1,2,3,4,5,6,7,8].map(n => {
+          const b = ins[n-1];
+          return `<div class="hw-term ${b&&b.val?'on':''}" onclick="${b?`toggleIn('${b.id}')`:''}">I${n}</div>`;
+        }).join('')}
+      </div>
+      <div class="hw-lcd">
+        MOHSEN LOGO! 8<br>
+        RUN: ${isSim&&!powerOff?'ACTIVE':'STOP'}<br>
+        IN: ${ins.map(b=>b.code+':'+(b.val?1:0)).join(' ') || '-'}<br>
+        OUT: ${outs.map(b=>b.code+':'+(b.val&&isSim&&!powerOff?1:0)).join(' ') || '-'}
+      </div>
+      <div class="hw-row">
+        ${[1,2,3,4].map(n => {
+          const b = outs[n-1];
+          return `<div class="hw-term ${b&&b.val&&isSim&&!powerOff?'qon':''}">Q${n}</div>`;
+        }).join('')}
+      </div>
+    </div>`;
+}
+
+/* ===== ALL 33 TEXTBOOK CIRCUITS (C212266.pdf) ===== */
+const BOOK_CIRCUITS = [
+  {m:'پودمان ۱: توابع ساده و روشنایی', k:'p1_1', t:'شکل ۱۷ (ص ۲۶): کلید یک‌پل و دوپل'},
+  {m:'پودمان ۱: توابع ساده و روشنایی', k:'p1_2', t:'شکل ۱۹ (ص ۲۸): کلید تبدیل (XOR)'},
+  {m:'پودمان ۱: توابع ساده و روشنایی', k:'p1_3', t:'شکل ۲۱ (ص ۲۹): کلید صلیبی + رله پله‌ای'},
+  {m:'پودمان ۱: توابع ساده و روشنایی', k:'p1_4', t:'شکل ۲۲ (ص ۳۰): رله ضربه‌ای مشترک و مستقل'},
+  {m:'پودمان ۱: توابع ساده و روشنایی', k:'p1_5', t:'شکل ۲۳ (ص ۳۱): کنترل ۴ روشنایی با قطع/وصل کل'},
+  {m:'پودمان ۱: توابع ساده و روشنایی', k:'p1_6', t:'شکل ۲۸ (ص ۳۷): مدار شستی چندکاره (کار عملی ۴)'},
+  {m:'پودمان ۱: توابع ساده و روشنایی', k:'p1_7', t:'شکل ۳۳ (ص ۴۴): روشنایی راه‌پله ۶ دقیقه‌ای + دائم'},
+  {m:'پودمان ۱: توابع ساده و روشنایی', k:'p1_8', t:'شکل ۳۶ (ص ۴۶): زنگ مدرسه (تایمر هفتگی)'},
+  {m:'پودمان ۱: توابع ساده و روشنایی', k:'p1_9', t:'شکل ۳۷ (ص ۴۷): روشنایی خارجی فتوسل + سنسور حرکت'},
+  {m:'پودمان ۱: توابع ساده و روشنایی', k:'p1_10', t:'شکل ۳۹ (ص ۴۹): روشنایی سالن ورزشی و رختکن'},
+  {m:'پودمان ۱: توابع ساده و روشنایی', k:'p1_11', t:'شکل ۴۰ (ص ۵۱): روشنایی و دزدگیر ساختمان ۳ زون'},
+  {m:'پودمان ۱: توابع ساده و روشنایی', k:'p1_12', t:'شکل ۴۱ (ص ۵۳): روشنایی ویترین مغازه ۴ گروه'},
+  {m:'پودمان ۲: فرمان موتور', k:'p2_1', t:'شکل ۷ (ص ۶۵): دستگاه پرس ایمنی دو دست (TP)'},
+  {m:'پودمان ۲: فرمان موتور', k:'p2_2', t:'شکل ۱۸ (ص ۷۳): راه‌اندازی لحظه‌ای و دائم با RS'},
+  {m:'پودمان ۲: فرمان موتور', k:'p2_3', t:'شکل ۲۳ (ص ۷۷): مدار تک‌خروجی فعال'},
+  {m:'پودمان ۲: فرمان موتور', k:'p2_4', t:'شکل ۲۷ (ص ۷۹): راه‌اندازی ترتیبی دو موتور'},
+  {m:'پودمان ۲: فرمان موتور', k:'p2_5', t:'شکل ۳۱ (ص ۸۴): تهویه سالن (تخلیه + هوای تازه)'},
+  {m:'پودمان ۲: فرمان موتور', k:'p2_6', t:'شکل ۳۳ (ص ۸۶): شیفت رجیستر ترتیبی ۴ موتور'},
+  {m:'پودمان ۳: تأسیسات صنعتی', k:'p3_1', t:'شکل ۴ (ص ۹۷): چپ‌گرد راست‌گرد با حفاظت کامل'},
+  {m:'پودمان ۳: تأسیسات صنعتی', k:'p3_2', t:'شکل ۹ (ص ۱۰۴): چپ‌گرد راست‌گرد سریع'},
+  {m:'پودمان ۳: تأسیسات صنعتی', k:'p3_3', t:'شکل ۱۸ (ص ۱۱۱): مدار کوره با توقف زمانی و لیمیت'},
+  {m:'پودمان ۳: تأسیسات صنعتی', k:'p3_4', t:'شکل ۲۵ (ص ۱۱۸): ستاره-مثلث خودکار'},
+  {m:'پودمان ۳: تأسیسات صنعتی', k:'p3_5', t:'شکل ۳۱ (ص ۱۲۵): موتور دالاندر (کند به تند)'},
+  {m:'پودمان ۳: تأسیسات صنعتی', k:'p3_6', t:'شکل ۳۴ (ص ۱۲۹): شمارشگر ظرفیت پارکینگ (CTUD)'},
+  {m:'پودمان ۳: تأسیسات صنعتی', k:'p3_7', t:'شکل ۴۰ (ص ۱۳۴): سکوی بالابر صنعتی کامل'},
+  {m:'پودمان ۴: توابع آنالوگ', k:'p4_1', t:'شکل ۱۰ (ص ۱۴۷): کنترل دمای ۳ مرحله‌ای'},
+  {m:'پودمان ۴: توابع آنالوگ', k:'p4_2', t:'شکل ۱۴ (ص ۱۴۹): کنترل دمای آکواریوم (PT100)'},
+  {m:'پودمان ۴: توابع آنالوگ', k:'p4_3', t:'شکل ۱۶ (ص ۱۵۲): کنترل دمای گلخانه با ۲ هواکش'},
+  {m:'پودمان ۴: توابع آنالوگ', k:'p4_4', t:'شکل ۱۷ (ص ۱۵۳): کنترل دمای اتاق با ۲ سنسور'},
+  {m:'پودمان ۴: توابع آنالوگ', k:'p4_5', t:'شکل ۱۹ (ص ۱۵۴): کنترل سطح مایع مخزن آنالوگ'},
+  {m:'پودمان ۴: توابع آنالوگ', k:'p4_6', t:'شکل ۲۱ (ص ۱۵۶): کنترل دمای داخلی موتور (آلارم + تریپ)'},
+  {m:'پودمان ۵: کاربردهای ویژه', k:'p5_1', t:'شکل ۱۰ (ص ۱۶۶): کنترل موتور با موبایل (NI + OR + RS)'},
+  {m:'پودمان ۵: کاربردهای ویژه', k:'p5_2', t:'شکل ۵۰ (ص ۱۹۰): کنترل هواکش حمام با KNX'}
+];
+
+function openBookModal() {
+  const groups = {};
+  BOOK_CIRCUITS.forEach(c => { (groups[c.m] = groups[c.m] || []).push(c); });
+  let html = '';
+  Object.keys(groups).forEach(m => {
+    html += `<h4 style="margin:10px 0 6px;color:#0f766e;">${m}</h4><div class="book-grid">` +
+      groups[m].map(c => `<button class="book-card" onclick="loadBookCircuit('${c.k}');closeModal();">${c.t}</button>`).join('') +
+      '</div>';
+  });
+  showModal('کل مدارهای کتاب رله‌های قابل برنامه‌ریزی (کد ۲۱۲۲۶۶)', html);
+}
+
+function wire(a, b, pin) { wires.push({id:'w'+(idSeq++), from:a.id, to:b.id, pin:pin||0}); }
+
+function loadBookCircuit(k) {
+  clearCanvas();
+  let i1,i2,i3,i4,b1,b2,b3,q1,q2,q3,q4,ai1;
+  switch (k) {
+    case 'p1_1':
+      i1=addBlock('input',40,40,'یک‌پل','I1'); i2=addBlock('input',40,130,'دوپل ۱','I2'); i3=addBlock('input',40,220,'دوپل ۲','I3');
+      q1=addBlock('output',320,40,'لامپ ۱','Q1'); q2=addBlock('output',320,130,'لامپ ۲','Q2'); q3=addBlock('output',320,220,'لامپ ۳','Q3');
+      wire(i1,q1); wire(i2,q2); wire(i3,q3); break;
+    case 'p1_2':
+      i1=addBlock('input',40,60,'تبدیل ۱','I1'); i2=addBlock('input',40,160,'تبدیل ۲','I2');
+      b1=addBlock('xorGate',220,110,'XOR','B001'); q1=addBlock('output',420,110,'لامپ','Q1');
+      wire(i1,b1,0); wire(i2,b1,1); wire(b1,q1,0); break;
+    case 'p1_3':
+      i1=addBlock('input',40,40,'تبدیل ۱','I1'); i2=addBlock('input',40,130,'صلیبی','I2'); i3=addBlock('input',40,220,'تبدیل ۲','I3');
+      b1=addBlock('orGate',200,130,'OR','B001'); b2=addBlock('impulse',360,130,'رله پله','B002'); q1=addBlock('output',520,130,'لامپ','Q1');
+      wire(i1,b1,0); wire(i2,b1,1); wire(i3,b1,2); wire(b1,b2,0); wire(b2,q1,0); break;
+    case 'p1_4': case 'p1_5':
+      i1=addBlock('input',40,40,'کلید ۱','I1'); i2=addBlock('input',40,130,'کلید ۲','I2'); i3=addBlock('input',40,220,'قطع کل','I3');
+      b1=addBlock('impulse',220,60,'رله ۱','B001'); b2=addBlock('impulse',220,170,'رله ۲','B002');
+      q1=addBlock('output',420,60,'روشنایی ۱','Q1'); q2=addBlock('output',420,170,'روشنایی ۲','Q2');
+      wire(i1,b1,0); wire(i3,b1,1); wire(i2,b2,0); wire(i3,b2,1); wire(b1,q1); wire(b2,q2); break;
+    case 'p1_6': case 'p1_7':
+      i1=addBlock('input',40,80,'شستی پله','I1'); i2=addBlock('input',40,180,'دائم','I2');
+      b1=addBlock('stairway',200,80,'تایمر پله','B001',6); b2=addBlock('orGate',360,120,'OR','B002'); q1=addBlock('output',520,120,'روشنایی','Q1');
+      wire(i1,b1,0); wire(b1,b2,0); wire(i2,b2,1); wire(b2,q1,0); break;
+    case 'p1_8':
+      b1=addBlock('weeklyTimer',80,80,'تایمر هفتگی','B001'); b2=addBlock('tp',260,80,'پالس زنگ','B002',5); q1=addBlock('output',440,80,'زنگ مدرسه','Q1');
+      wire(b1,b2,0); wire(b2,q1,0); break;
+    case 'p1_9': case 'p1_10':
+      i1=addBlock('input',40,60,'فتوسل','I1'); i2=addBlock('input',40,160,'سنسور حرکت','I2');
+      b1=addBlock('andGate',200,110,'AND','B001'); b2=addBlock('tof',340,110,'تأخیر قطع','B002',5); q1=addBlock('output',500,110,'پروژکتور','Q1');
+      wire(i1,b1,0); wire(i2,b1,1); wire(b1,b2,0); wire(b2,q1,0); break;
+    case 'p1_11':
+      i1=addBlock('input',40,40,'زون ۱','I1'); i2=addBlock('input',40,130,'زون ۲','I2'); i3=addBlock('input',40,220,'ریست','I3');
+      b1=addBlock('orGate',190,80,'OR','B001'); b2=addBlock('rs',320,100,'قفل آلارم','B002'); b3=addBlock('pulse',450,100,'فلاشر','B003',1); q1=addBlock('output',590,100,'آژیر','Q1');
+      wire(i1,b1,0); wire(i2,b1,1); wire(b1,b2,0); wire(i3,b2,1); wire(b2,b3,0); wire(b3,q1,0); break;
+    case 'p1_12':
+      b1=addBlock('weeklyTimer',40,100,'زمانبند شب','B001'); i1=addBlock('input',40,200,'فتوسل','I1');
+      b2=addBlock('andGate',220,140,'AND','B002'); q1=addBlock('output',420,90,'ویترین ۱','Q1'); q2=addBlock('output',420,190,'ویترین ۲','Q2');
+      wire(b1,b2,0); wire(i1,b2,1); wire(b2,q1); wire(b2,q2); break;
+    case 'p2_1':
+      i1=addBlock('input',40,60,'شستی چپ','I1'); i2=addBlock('input',40,160,'شستی راست','I2');
+      b1=addBlock('andGate',200,110,'ایمنی دو دست','B001'); b2=addBlock('tp',350,110,'پالس پرس','B002',3); q1=addBlock('output',510,110,'جک پرس','Q1');
+      wire(i1,b1,0); wire(i2,b1,1); wire(b1,b2,0); wire(b2,q1,0); break;
+    case 'p2_2':
+      i1=addBlock('input',40,40,'استارت دائم','I1'); i2=addBlock('input',40,130,'استپ','I2'); i3=addBlock('input',40,220,'لحظه‌ای','I3');
+      b1=addBlock('rs',210,70,'RS','B001'); b2=addBlock('orGate',370,130,'OR','B002'); q1=addBlock('output',520,130,'موتور','Q1');
+      wire(i1,b1,0); wire(i2,b1,1); wire(b1,b2,0); wire(i3,b2,1); wire(b2,q1,0); break;
+    case 'p2_3':
+      i1=addBlock('input',40,60,'شستی ۱','I1'); i2=addBlock('input',40,170,'شستی ۲','I2');
+      b1=addBlock('notGate',180,60,'NOT2','B001'); b2=addBlock('andGate',320,60,'AND1','B002');
+      q1=addBlock('output',480,60,'خروجی ۱','Q1'); q2=addBlock('output',480,170,'خروجی ۲','Q2');
+      wire(i2,b1,0); wire(i1,b2,0); wire(b1,b2,1); wire(b2,q1,0); wire(i2,q2,0); break;
+    case 'p2_4': case 'p2_5':
+      i1=addBlock('input',40,60,'استارت','I1'); i2=addBlock('input',40,160,'استپ','I2');
+      b1=addBlock('rs',190,90,'RS','B001'); b2=addBlock('ton',340,160,'تأخیر M2','B002',4);
+      q1=addBlock('output',510,70,'موتور ۱','Q1'); q2=addBlock('output',510,170,'موتور ۲','Q2');
+      wire(i1,b1,0); wire(i2,b1,1); wire(b1,q1,0); wire(b1,b2,0); wire(b2,q2,0); break;
+    case 'p2_6':
+      i1=addBlock('input',40,60,'پالس شیفت','I1'); i2=addBlock('input',40,160,'ریست','I2');
+      b1=addBlock('shiftRegister',220,100,'شیفت رجیستر','B001'); q1=addBlock('output',420,100,'موتورهای ترتیبی','Q1');
+      wire(i1,b1,0); wire(i2,b1,1); wire(b1,q1,0); break;
+    case 'p3_1': case 'p3_2':
+      i1=addBlock('input',40,40,'راست‌گرد','I1'); i2=addBlock('input',40,130,'چپ‌گرد','I2'); i3=addBlock('input',40,220,'استپ/بیمتال','I3');
+      b1=addBlock('rs',220,60,'RS راست','B001'); b2=addBlock('rs',220,180,'RS چپ','B002');
+      q1=addBlock('output',440,60,'موتور راست','Q1'); q2=addBlock('output',440,180,'موتور چپ','Q2');
+      wire(i1,b1,0); wire(i3,b1,1); wire(i2,b2,0); wire(i3,b2,1); wire(b1,q1,0); wire(b2,q2,0); break;
+    case 'p3_3':
+      i1=addBlock('input',40,60,'شروع کوره','I1'); i2=addBlock('input',40,160,'لیمیت سوئیچ','I2');
+      b1=addBlock('rs',200,80,'RS کوره','B001'); b2=addBlock('ton',340,160,'تایمر پخت','B002',5); q1=addBlock('output',500,80,'هیتر کوره','Q1');
+      wire(i1,b1,0); wire(i2,b1,1); wire(b1,q1,0); wire(b1,b2,0); break;
+    case 'p3_4':
+      i1=addBlock('input',40,60,'استارت','I1'); i2=addBlock('input',40,160,'استپ','I2');
+      b1=addBlock('rs',180,90,'کنتاکتور اصلی','B001'); b2=addBlock('ton',320,160,'تایمر تبدیل','B002',5); b3=addBlock('notGate',450,80,'اینترلاک ستاره','B003');
+      q1=addBlock('output',600,40,'اصلی K1','Q1'); q2=addBlock('output',600,120,'ستاره K2','Q2'); q3=addBlock('output',600,200,'مثلث K3','Q3');
+      wire(i1,b1,0); wire(i2,b1,1); wire(b1,q1,0); wire(b1,b2,0); wire(b2,b3,0); wire(b3,q2,0); wire(b2,q3,0); break;
+    case 'p3_5':
+      i1=addBlock('input',40,60,'استارت کند','I1'); i2=addBlock('input',40,160,'استپ','I2');
+      b1=addBlock('rs',190,80,'RS کند','B001'); b2=addBlock('ton',340,170,'انتقال به تند','B002',5);
+      q1=addBlock('output',520,80,'دور کند','Q1'); q2=addBlock('output',520,170,'دور تند','Q2');
+      wire(i1,b1,0); wire(i2,b1,1); wire(b1,q1,0); wire(b1,b2,0); wire(b2,q2,0); break;
+    case 'p3_6':
+      i1=addBlock('input',40,40,'ریست','I1'); i2=addBlock('input',40,130,'سنسور ورود/خروج','I2'); i3=addBlock('input',40,220,'جهت خروج','I3');
+      b1=addBlock('ctud',240,110,'شمارنده ظرفیت','B001',5); q1=addBlock('output',460,110,'تابلو تکمیل ظرفیت','Q1');
+      wire(i1,b1,0); wire(i2,b1,1); wire(i3,b1,2); wire(b1,q1,0); break;
+    case 'p3_7':
+      i1=addBlock('input',40,40,'بالا','I1'); i2=addBlock('input',40,130,'پایین','I2'); i3=addBlock('input',40,220,'لیمیت اضطراری','I3');
+      b1=addBlock('rs',220,60,'فرمان بالا','B001'); b2=addBlock('rs',220,180,'فرمان پایین','B002');
+      q1=addBlock('output',440,60,'موتور بالا','Q1'); q2=addBlock('output',440,180,'موتور پایین','Q2');
+      wire(i1,b1,0); wire(i3,b1,1); wire(i2,b2,0); wire(i3,b2,1); wire(b1,q1,0); wire(b2,q2,0); break;
+    case 'p4_1': case 'p4_2': case 'p4_3': case 'p4_4': case 'p4_5': case 'p4_6':
+      ai1=addBlock('analogInput',40,110,'سنسور دما/سطح','AI1',35);
+      b1=addBlock('analogCmp',220,60,'آستانه مرحله ۱','B001',30);
+      b2=addBlock('analogCmp',220,170,'آستانه مرحله ۲','B002',60);
+      q1=addBlock('output',440,60,'هواکش/آلارم ۱','Q1'); q2=addBlock('output',440,170,'تریپ/پمپ ۲','Q2');
+      wire(ai1,b1,0); wire(ai1,b2,0); wire(b1,q1,0); wire(b2,q2,0); break;
+    case 'p5_1':
+      i1=addBlock('networkInput',40,50,'فرمان موبایل','NI1'); i2=addBlock('input',40,140,'استارت دستی','I1'); i3=addBlock('input',40,230,'استپ','I2');
+      b1=addBlock('orGate',200,90,'OR','B001'); b2=addBlock('rs',350,120,'RS موتور','B002'); q1=addBlock('output',510,120,'موتور شبکه','Q1');
+      wire(i1,b1,0); wire(i2,b1,1); wire(b1,b2,0); wire(i3,b2,1); wire(b2,q1,0); break;
+    case 'p5_2':
+      i1=addBlock('networkInput',40,80,'سنسور KNX','NI1'); b1=addBlock('tof',220,80,'تأخیر هواکش','B001',5); q1=addBlock('networkOutput',420,80,'هواکش KNX','NQ1');
+      wire(i1,b1,0); wire(b1,q1,0); break;
+  }
+  draw(); updateIoBar();
+}
+
+/* ===== HARDWARE CODE GENERATOR (ALL 32 BLOCKS -> Arduino/ESP32/AVR C++) ===== */
+function openCodeModal() {
+  const bMap = {}; blocks.forEach(b => bMap[b.id] = b);
+  let pinIn = 2, pinOut = 8, pinAi = 0;
+  let defines = '', setup = '', loop = '';
+  blocks.forEach(b => {
+    const id = b.id;
+    if (b.type==='input'||b.type==='networkInput') {
+      defines += `const int PIN_${id} = ${pinIn++}; // ${b.code} (${b.label})\nbool val_${id} = false;\n`;
+      setup += `  pinMode(PIN_${id}, INPUT_PULLUP);\n`;
+      loop += `  val_${id} = !digitalRead(PIN_${id});\n`;
+    } else if (b.type==='analogInput') {
+      defines += `const int PIN_${id} = A${pinAi++}; // ${b.code}\nint aVal_${id} = 0;\n`;
+      loop += `  aVal_${id} = map(analogRead(PIN_${id}), 0, 1023, 0, 100);\n`;
+    } else if (b.type==='output'||b.type==='networkOutput') {
+      defines += `const int PIN_${id} = ${pinOut++}; // ${b.code} (${b.label})\nbool val_${id} = false;\n`;
+      setup += `  pinMode(PIN_${id}, OUTPUT);\n`;
+    } else {
+      defines += `bool val_${id} = false, prev_${id} = false;\nunsigned long t_${id} = 0;\nint cnt_${id} = 0;\n`;
+    }
+  });
+  blocks.forEach(b => {
+    const ins = wires.filter(w => w.to === b.id).sort((a,c)=>a.pin-c.pin).map(w => 'val_'+w.from);
+    const ains = wires.filter(w => w.to === b.id).sort((a,c)=>a.pin-c.pin).map(w => 'aVal_'+w.from);
+    const v0 = ins[0] || 'false', v1 = ins[1] || 'false', v2 = ins[2] || 'false';
+    const ms = Math.round((b.param || 3) * 1000);
+    if (b.type==='andGate') loop += `  val_${b.id} = ${ins.length?ins.join(' && '):'false'};\n`;
+    else if (b.type==='orGate') loop += `  val_${b.id} = ${ins.length?ins.join(' || '):'false'};\n`;
+    else if (b.type==='notGate') loop += `  val_${b.id} = !(${v0});\n`;
+    else if (b.type==='nandGate') loop += `  val_${b.id} = !(${ins.length?ins.join(' && '):'false'});\n`;
+    else if (b.type==='norGate') loop += `  val_${b.id} = !(${ins.length?ins.join(' || '):'false'});\n`;
+    else if (b.type==='xorGate') loop += `  val_${b.id} = (${v0}) ^ (${v1});\n`;
+    else if (b.type==='rs') loop += `  if (${v1}) val_${b.id} = false; else if (${v0}) val_${b.id} = true;\n`;
+    else if (b.type==='impulse') loop += `  if (${v1}) val_${b.id} = false; else if (${v0} && !prev_${b.id}) val_${b.id} = !val_${b.id}; prev_${b.id} = ${v0};\n`;
+    else if (b.type==='ton'||b.type==='tonr') loop += `  if (${v0}) { if (t_${b.id}==0) t_${b.id}=millis(); if (millis()-t_${b.id}>=${ms}) val_${b.id}=true; } else { t_${b.id}=0; val_${b.id}=false; }\n`;
+    else if (b.type==='tof'||b.type==='stairway') loop += `  if (${v0}) { val_${b.id}=true; t_${b.id}=millis(); } else if (val_${b.id} && millis()-t_${b.id}>=${ms}) { val_${b.id}=false; }\n`;
+    else if (b.type==='tp') loop += `  if (${v0} && !prev_${b.id}) { val_${b.id}=true; t_${b.id}=millis(); } if (val_${b.id} && millis()-t_${b.id}>=${ms}) val_${b.id}=false; prev_${b.id}=${v0};\n`;
+    else if (b.type==='pulse') loop += `  if (${v0}) { if (millis()-t_${b.id}>=${ms}) { t_${b.id}=millis(); val_${b.id}=!val_${b.id}; } } else val_${b.id}=false;\n`;
+    else if (b.type==='ctud') loop += `  if (${v0}) cnt_${b.id}=0; if (${v1} && !prev_${b.id}) cnt_${b.id}+=(${v2}?-1:1); prev_${b.id}=${v1}; val_${b.id}=(cnt_${b.id}>=${b.param});\n`;
+    else if (b.type==='analogCmp') loop += `  val_${b.id} = (${ains[0]||'0'} >= ${b.param});\n`;
+    else if (b.type==='output'||b.type==='networkOutput') loop += `  val_${b.id} = ${v0}; digitalWrite(PIN_${b.id}, val_${b.id} ? HIGH : LOW);\n`;
+    else if (b.type==='flag'||b.type==='messageText') loop += `  val_${b.id} = ${v0};\n`;
+  });
+  const fullCode = `// MOHSEN LOGO! Soft -> Arduino / ESP32 / AVR C++\n${defines}\nvoid setup() {\n  Serial.begin(115200);\n${setup}}\n\nvoid loop() {\n${loop}  delay(20);\n}\n`;
+  showModal('کد انتقال روی سخت‌افزار (Arduino / ESP32 / AVR C++)',
+    `<button class="tbtn active" style="margin-bottom:8px;" onclick="navigator.clipboard.writeText(document.getElementById('cppOut').textContent);alert('کد کپی شد!')">📋 کپی کد</button>` +
+    `<pre class="codebox" id="cppOut">${fullCode.replace(/</g,'&lt;')}</pre>`);
+}
+
+/* ===== LOCAL PROJECTS ===== */
+function openProjectsModal() {
+  const saved = JSON.parse(localStorage.getItem('mohsen_projects') || '{}');
+  const list = Object.keys(saved).map(n =>
+    `<div style="display:flex;justify-content:space-between;padding:6px;border-bottom:1px solid #e2e8f0;">
+      <span>📁 ${n}</span>
+      <div><button class="tbtn teal" onclick="loadProj('${n}');closeModal()">باز کردن</button>
+      <button class="tbtn red" onclick="delProj('${n}')">حذف</button></div>
+    </div>`
+  ).join('') || '<p>هنوز پروژه‌ای ذخیره نشده است.</p>';
+  showModal('مدیریت پروژه‌های ذخیره شده',
+    `<div style="display:flex;gap:6px;margin-bottom:10px;">
+      <input id="projName" placeholder="نام پروژه..." style="flex:1;padding:6px;border:1px solid #94a3b8;border-radius:4px;">
+      <button class="tbtn active" onclick="saveProj()">ذخیره مدار فعلی</button>
+    </div>${list}`);
+}
+function saveProj() {
+  const n = document.getElementById('projName').value.trim();
+  if (!n) return;
+  const saved = JSON.parse(localStorage.getItem('mohsen_projects') || '{}');
+  saved[n] = {blocks, wires, idSeq};
+  localStorage.setItem('mohsen_projects', JSON.stringify(saved));
+  openProjectsModal();
+}
+function loadProj(n) {
+  const saved = JSON.parse(localStorage.getItem('mohsen_projects') || '{}');
+  if (saved[n]) { blocks = saved[n].blocks; wires = saved[n].wires; idSeq = saved[n].idSeq || 50; draw(); updateIoBar(); }
+}
+function delProj(n) {
+  const saved = JSON.parse(localStorage.getItem('mohsen_projects') || '{}');
+  delete saved[n]; localStorage.setItem('mohsen_projects', JSON.stringify(saved)); openProjectsModal();
+}
+
+/* ===== FULL-SCREEN AI PAGE + VOICE + IMAGE/FILE UPLOAD ===== */
+function loadAiCfg() {
+  const c = JSON.parse(localStorage.getItem('mohsen_ai_cfg') || '{}');
+  document.getElementById('aiUrl').value = c.url || 'https://ai.liara.ir/api/PROJECT_ID/v1/chat/completions';
+  document.getElementById('aiKey').value = c.key || '';
+  document.getElementById('aiModel').value = c.model || 'openai/gpt-4.1-mini';
+}
+function saveAiCfg() {
+  let u = document.getElementById('aiUrl').value.trim().replace(/\/+$/, '');
+  if (u.endsWith('/v1') || u.endsWith('/v1beta/openai')) u += '/chat/completions';
+  document.getElementById('aiUrl').value = u;
+  localStorage.setItem('mohsen_ai_cfg', JSON.stringify({
+    url: u, key: document.getElementById('aiKey').value.trim(), model: document.getElementById('aiModel').value.trim()
+  }));
+  document.getElementById('aiSettings').classList.remove('show');
+  showAiErr('تنظیمات API ذخیره شد.');
+}
+function presetApi(p) {
+  if (p==='liara') { document.getElementById('aiUrl').value='https://ai.liara.ir/api/PROJECT_ID/v1/chat/completions'; document.getElementById('aiModel').value='openai/gpt-4.1-mini'; }
+  if (p==='openai') { document.getElementById('aiUrl').value='https://api.openai.com/v1/chat/completions'; document.getElementById('aiModel').value='gpt-4o-mini'; }
+  if (p==='openrouter') { document.getElementById('aiUrl').value='https://openrouter.ai/api/v1/chat/completions'; document.getElementById('aiModel').value='openai/gpt-4o-mini'; }
+  if (p==='avalai') { document.getElementById('aiUrl').value='https://api.avalai.ir/v1/chat/completions'; document.getElementById('aiModel').value='gpt-4o-mini'; }
+}
+function openAiPage(tab) {
+  loadAiCfg();
+  document.getElementById('aiPage').classList.add('show');
+  setAiTab(tab !== undefined ? tab : 1);
+  if (!document.getElementById('aiKey').value) document.getElementById('aiSettings').classList.add('show');
+  renderAiChat();
+}
+function closeAiPage() { document.getElementById('aiPage').classList.remove('show'); }
+function toggleAiSettings() { document.getElementById('aiSettings').classList.toggle('show'); }
+function setAiTab(t) {
+  aiTab = t;
+  document.getElementById('tabChat').classList.toggle('active', t===1);
+  document.getElementById('tabDraw').classList.toggle('active', t===0);
+  document.getElementById('aiSendBtn').textContent = t===1 ? 'ارسال' : 'رسم مدار';
+}
+function showAiErr(m) {
+  const el = document.getElementById('aiErr');
+  el.textContent = m; el.style.display = m ? 'block' : 'none';
+}
+function clearAiChat() { aiChat = []; renderAiChat(); }
+function renderAiChat() {
+  const b = document.getElementById('aiChatBody');
+  if (!aiChat.length) {
+    b.innerHTML = '<div style="text-align:center;color:#64748b;margin-top:40px;font-size:14px;">هر سوالی درباره PLC و لوگو داری بپرس، یا عکس نقشه مدار را آپلود کن تا تحلیل یا رسم کند!</div>';
+    return;
+  }
+  b.innerHTML = aiChat.map(m => `<div class="msg ${m.role==='user'?'user':'bot'}">${m.content.replace(/</g,'&lt;')}</div>`).join('');
+  b.scrollTop = b.scrollHeight;
+}
+function handleFilePick(inp, isImg) {
+  const f = inp.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    const dataUrl = r.result;
+    pendingAtt = {name: f.name, mime: f.type || 'application/octet-stream', isImg: isImg || f.type.startsWith('image/'), dataUrl};
+    document.getElementById('attName').textContent = '📎 پیوست آماده ارسال: ' + f.name;
+    document.getElementById('attBar').style.display = 'flex';
+  };
+  r.readAsDataURL(f);
+  inp.value = '';
+}
+function clearAttachment() { pendingAtt = null; document.getElementById('attBar').style.display = 'none'; }
+
+async function callAi(messages, temp) {
+  saveAiCfg();
+  const c = JSON.parse(localStorage.getItem('mohsen_ai_cfg') || '{}');
+  if (!c.url || c.url.includes('PROJECT_ID')) throw new Error('آدرس API معتبر وارد کنید (برای لیارا شناسه پروژه را جایگزین PROJECT_ID کنید).');
+  if (!c.key) throw new Error('کلید API را در تنظیمات وارد کنید.');
+  const resp = await fetch(c.url, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + c.key},
+    body: JSON.stringify({model: c.model || 'openai/gpt-4.1-mini', messages, temperature: temp})
+  });
+  const data = await resp.json();
+  if (!resp.ok) throw new Error('HTTP ' + resp.status + ': ' + (data.error?.message || JSON.stringify(data)));
+  return data.choices[0].message.content;
+}
+
+async function sendAiAction() {
+  const txt = document.getElementById('aiInput').value.trim();
+  if (!txt && !pendingAtt) return;
+  showAiErr('در حال ارتباط با هوش مصنوعی...');
+  const userContent = pendingAtt
+    ? (pendingAtt.isImg
+        ? [{type:'text', text: txt || 'این تصویر را بررسی کن.'}, {type:'image_url', image_url:{url: pendingAtt.dataUrl}}]
+        : [{type:'text', text: txt || 'این فایل را بررسی کن.'}, {type:'file', file:{filename: pendingAtt.name, file_data: pendingAtt.dataUrl}}])
+    : txt;
+
+  try {
+    if (aiTab === 0) {
+      const sys = 'You are a Siemens LOGO! Soft Comfort designer. Return ONLY valid JSON {"blocks":[{"id":"b1","code":"I1","type":"input","label":"I1","x":40,"y":60,"param":3}],"wires":[{"id":"w1","from":"b1","to":"b2","pin":0}]}. Allowed types: input,analogInput,output,analogOutput,flag,high,low,andGate,orGate,nandGate,norGate,xorGate,notGate,ton,tof,tonr,tp,pulse,stairway,weeklyTimer,rs,impulse,ctud,analogCmp,shiftRegister,messageText.';
+      const raw = await callAi([{role:'system', content:sys}, {role:'user', content:userContent}], 0.2);
+      const j = JSON.parse(raw.slice(raw.indexOf('{'), raw.lastIndexOf('}') + 1));
+      if (!j.blocks || !j.blocks.length) throw new Error('مدل بلوکی برنگرداند.');
+      clearCanvas();
+      blocks = j.blocks.map(b => ({id:b.id, type:b.type||'andGate', code:b.code||'B1', label:b.label||b.code||'B', x:b.x||100, y:b.y||80, param:b.param||3, param2:2, val:false, aVal:25, timer:0, count:0, prevIn:false}));
+      wires = (j.wires||[]).map(w => ({id:w.id||('w'+(idSeq++)), from:w.from, to:w.to, pin:w.pin||0}));
+      idSeq = blocks.length + wires.length + 20;
+      clearAttachment(); document.getElementById('aiInput').value = '';
+      showAiErr(''); closeAiPage(); draw(); updateIoBar();
+    } else {
+      aiChat.push({role:'user', content: txt + (pendingAtt ? '\n[📎 ' + pendingAtt.name + ']' : '')});
+      document.getElementById('aiInput').value = '';
+      const attCopy = pendingAtt; clearAttachment(); renderAiChat();
+      const summary = blocks.map(b=>`${b.code}(${b.type}:${b.label})`).join(', ');
+      const msgs = [
+        {role:'system', content:'شما استاد برق صنعتی و PLC لوگو زیمنس هستید. به فارسی دقیق پاسخ دهید. مدار فعلی کاربر: ' + (summary || 'خالی')},
+        ...aiChat.slice(0, -1).map(m => ({role:m.role, content:m.content})),
+        {role:'user', content: userContent}
+      ];
+      const ans = await callAi(msgs, 0.4);
+      aiChat.push({role:'assistant', content: ans});
+      showAiErr(''); renderAiChat();
+    }
+  } catch (e) {
+    showAiErr('خطا: ' + e.message);
+  }
+}
+
+function listenSpeech(cb) {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { alert('تشخیص گفتار در این مرورگر پشتیبانی نمی‌شود (از Chrome یا Edge استفاده کنید).'); return; }
+  const rec = new SR(); rec.lang = 'fa-IR'; rec.interimResults = false;
+  rec.onresult = e => cb(e.results[0][0].transcript);
+  rec.onerror = e => alert('خطای میکروفون: ' + e.error);
+  rec.start();
+}
+function voiceToInput() { listenSpeech(t => { document.getElementById('aiInput').value = t; }); }
+function startVoiceDraw() {
+  listenSpeech(t => {
+    if (t.includes('صلیبی')) loadBookCircuit('p1_3');
+    else if (t.includes('تبدیل')) loadBookCircuit('p1_2');
+    else if (t.includes('ستاره') || t.includes('مثلث')) loadBookCircuit('p3_4');
+    else if (t.includes('چپ') && t.includes('راست')) loadBookCircuit('p3_1');
+    else if (t.includes('پارکینگ')) loadBookCircuit('p3_6');
+    else if (t.includes('راه‌پله') || t.includes('راه پله')) loadBookCircuit('p1_7');
+    else { openAiPage(0); document.getElementById('aiInput').value = t; sendAiAction(); }
+  });
+}
+
+function showModal(title, html) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalBody').innerHTML = html;
+  document.getElementById('modalBg').classList.add('show');
+}
+function closeModal() { document.getElementById('modalBg').classList.remove('show'); }
+
+initSidebar();
+loadBookCircuit('p3_4');
+</script>
+</body>
+</html>
